@@ -44,6 +44,7 @@ func NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiPath string
 		apiPath = path.Join("/", apiPath)
 	}
 	return &Request{
+		client:     client,
 		verb:       verb,
 		baseURL:    baseURL,
 		pathPrefix: apiPath,

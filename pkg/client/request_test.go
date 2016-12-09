@@ -3,10 +3,77 @@ package client
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/dongyiyang/turbo-api/pkg/api"
 )
+
+func TestNewRequest(t *testing.T) {
+	// NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiPath string) *Request
+	client := http.DefaultClient
+	verb := "GET"
+	baseURL, _ := url.Parse("http://localhost")
+	table := []struct {
+		apiPath       string
+		expectRequest *Request
+	}{
+		{
+			"",
+			&Request{
+				client:     client,
+				verb:       verb,
+				baseURL:    baseURL,
+				pathPrefix: "",
+			},
+		},
+		{
+			"foo",
+			&Request{
+				client:     client,
+				verb:       verb,
+				baseURL:    baseURL,
+				pathPrefix: "/foo",
+			},
+		},
+		{
+			"/bar",
+			&Request{
+				client:     client,
+				verb:       verb,
+				baseURL:    baseURL,
+				pathPrefix: "/bar",
+			},
+		},
+	}
+
+	for _, item := range table {
+		request := NewRequest(client, verb, baseURL, item.apiPath)
+		if !reflect.DeepEqual(request, item.expectRequest) {
+			t.Errorf("expected %++v, got %++v", item.expectRequest, request)
+		}
+	}
+}
+
+func TestBasicAuthentication(t *testing.T) {
+	table := []struct {
+		username   string
+		password   string
+		expectAuth *BasicAuthentication
+	}{
+		{"foo", "31415", &BasicAuthentication{"foo", "31415"}},
+		{"bar", "", &BasicAuthentication{"bar", ""}},
+	}
+
+	u, _ := url.Parse("http://localhost")
+	for _, item := range table {
+		basicAuth := &BasicAuthentication{item.username, item.password}
+		request := NewRequest(http.DefaultClient, "GET", u, "").BasicAuthentication(basicAuth)
+		if !reflect.DeepEqual(request.basicAuth, item.expectAuth) {
+			t.Errorf("expected %++v, got %++v", item.expectAuth, request)
+		}
+	}
+}
 
 func TestParam(t *testing.T) {
 	u, _ := url.Parse("http://localhost")
