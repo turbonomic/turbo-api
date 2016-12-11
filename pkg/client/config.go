@@ -30,29 +30,29 @@ func NewConfigBuilder(serverAddress *url.URL) *ConfigBuilder {
 	}
 }
 
-func (this *ConfigBuilder) APIPath(apiPath string) *ConfigBuilder {
-	this.apiPath = apiPath
-	return this
+func (cb *ConfigBuilder) APIPath(apiPath string) *ConfigBuilder {
+	cb.apiPath = apiPath
+	return cb
 }
 
-func (this *ConfigBuilder) BasicAuthentication(usrn, passd string) *ConfigBuilder {
-	this.basicAuth = &BasicAuthentication{
+func (cb *ConfigBuilder) BasicAuthentication(usrn, passd string) *ConfigBuilder {
+	cb.basicAuth = &BasicAuthentication{
 		username: usrn,
 		password: passd,
 	}
-	return this
+	return cb
 }
 
-func (this *ConfigBuilder) Create() *Config {
+func (cb *ConfigBuilder) Create() *Config {
 	return &Config{
-		ServerAddress: this.serverAddress,
+		ServerAddress: cb.serverAddress,
 		// If API path not specified, use the default API path.
 		APIPath: func() string {
-			if this.apiPath == "" {
+			if cb.apiPath == "" {
 				return defaultAPIPath
 			}
-			return this.apiPath
+			return cb.apiPath
 		}(),
-		BasicAuth: this.basicAuth,
+		BasicAuth: cb.basicAuth,
 	}
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -55,7 +56,7 @@ func TestNewRequest(t *testing.T) {
 	}
 }
 
-func TestBasicAuthentication(t *testing.T) {
+func TestRequest_BasicAuthentication(t *testing.T) {
 	table := []struct {
 		username   string
 		password   string
@@ -75,7 +76,97 @@ func TestBasicAuthentication(t *testing.T) {
 	}
 }
 
-func TestParam(t *testing.T) {
+func TestRequest_Resource(t *testing.T) {
+	table := []struct {
+		existingError    error
+		existingResource api.ResourceType
+		resource         api.ResourceType
+		expectedResource api.ResourceType
+		expectsError     bool
+	}{
+		{
+			existingError: fmt.Errorf("error"),
+			expectsError:  true,
+		},
+		{
+			existingResource: api.Resource_Type_Target,
+			resource:         api.Resource_Type_External_Target,
+			expectsError:     true,
+		},
+		{
+			resource:         api.Resource_Type_Target,
+			expectedResource: api.Resource_Type_Target,
+			expectsError:     false,
+		},
+	}
+
+	u, _ := url.Parse("http://localhost")
+	for _, item := range table {
+		request := NewRequest(http.DefaultClient, "GET", u, "")
+		if item.existingError != nil {
+			request.err = item.existingError
+		}
+		if item.existingResource != "" {
+			request.resource = item.existingResource
+		}
+		request = request.Resource(item.resource)
+		if request.err != nil != item.expectsError {
+			t.Error("Error handling check failed.")
+		}
+		if !item.expectsError && request.resource != item.expectedResource {
+			t.Error("Expected Reource %s, got %s", item.expectedResource, request.resource)
+		}
+	}
+}
+
+func TestRequest_Name(t *testing.T) {
+	table := []struct {
+		existingError        error
+		existingResourceName string
+		resourceName         string
+		expectedResourceName string
+		expectsError         bool
+	}{
+		{
+			existingError: fmt.Errorf("error"),
+			expectsError:  true,
+		},
+		{
+			existingResourceName: "target1",
+			resourceName:         "target2",
+			expectsError:         true,
+		},
+		{
+			resourceName: "",
+			expectsError: true,
+		},
+		{
+			resourceName:         "target1",
+			expectedResourceName: "target1",
+			expectsError:         false,
+		},
+	}
+
+	u, _ := url.Parse("http://localhost")
+	for _, item := range table {
+		request := NewRequest(http.DefaultClient, "GET", u, "")
+		if item.existingError != nil {
+			request.err = item.existingError
+		}
+		if item.existingResourceName != "" {
+			request.resourceName = item.existingResourceName
+		}
+		request = request.Name(item.resourceName)
+		if request.err != nil != item.expectsError {
+			t.Error("Error handling check failed.")
+		}
+		if !item.expectsError && request.resourceName != item.expectedResourceName {
+			t.Error("Expected Reource %s, got %s", item.expectedResourceName, request.resourceName)
+		}
+	}
+}
+
+func TestRequest_Param(t *testing.T) {
 	u, _ := url.Parse("http://localhost")
 	table := []struct {
 		name      string
@@ -95,7 +186,7 @@ func TestParam(t *testing.T) {
 	}
 }
 
-func TestName(t *testing.T) {
+func TestRequest_NameURL(t *testing.T) {
 	u, _ := url.Parse("http://localhost")
 	tests := []struct {
 		name      string
@@ -112,7 +203,7 @@ func TestName(t *testing.T) {
 	}
 }
 
-func TestResource(t *testing.T) {
+func TestRequest_ResourceURL(t *testing.T) {
 	u, _ := url.Parse("http://localhost")
 	tests := []struct {
 		resource  api.ResourceType
@@ -156,6 +247,25 @@ func TestURLInOrder(t *testing.T) {
 		}
 		if e, a := test.expectStr, r.URL().String(); e != a {
 			t.Errorf("expected %s, got %s", e, a)
+		}
+	}
+}
+
+// Only test resp == nil for now.
+func TestParseHTTPResponse(t *testing.T) {
+	table := []struct {
+		resp         *http.Response
+		expectsError bool
+	}{
+		{
+			nil,
+			true,
+		},
+	}
+	for _, item := range table {
+		result := parseHTTPResponse(item.resp)
+		if item.expectsError && result.err == nil {
+			t.Error("Expected error, but got nil in err field in Result")
 		}
 	}
 }
