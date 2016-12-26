@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"github.com/dongyiyang/turbo-api/pkg/api"
 )
 
 func TestNewAPIClientWithBA(t *testing.T) {
@@ -35,5 +36,29 @@ func TestNewAPIClientWithBA(t *testing.T) {
 		if !reflect.DeepEqual(client, item.expectedClient) {
 			t.Errorf("Expected client %++v, got %++v", item.expectedClient, client)
 		}
+	}
+}
+
+func TestClient_DiscoverTarget_WithError(t *testing.T) {
+	address := ""
+	baseURL, _ := url.Parse("http://localhost")
+	apiPath := "path/to/api"
+	config:=&Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	client, _ := NewAPIClientWithBA(config)
+	err := client.DiscoverTarget(address)
+	if err == nil {
+		t.Error("Expected error, but got no error.")
+	}
+}
+
+func TestClient_AddExternalTarget_WithError(t *testing.T) {
+	target := &api.Target{}
+	baseURL, _ := url.Parse("http://localhost")
+	apiPath := "path/to/api"
+	config:=&Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	client, _ := NewAPIClientWithBA(config)
+	err := client.AddExternalTarget(target)
+	if err == nil {
+		t.Error("Expected error, but got no error.")
 	}
 }

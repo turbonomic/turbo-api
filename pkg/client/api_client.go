@@ -24,7 +24,10 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 // <turbo_server_address>/vmturbo/api/targets/<name_or_address>
 func (c *Client) DiscoverTarget(nameOrAddress string) error {
 	_, err := c.Post().Resource(api.Resource_Type_Target).Name(nameOrAddress).Do()
-	return fmt.Errorf("Failed to discover target %s: %s", nameOrAddress, err)
+	if err != nil {
+		return fmt.Errorf("Failed to discover target %s: %s", nameOrAddress, err)
+	}
+	return nil
 }
 
 // Add a ExampleProbe target to server
@@ -39,5 +42,8 @@ func (c *Client) AddExternalTarget(target *api.Target) error {
 		Param("password", target.Password).
 		Do()
 
-	return fmt.Errorf("Failed to add external target: %s", err)
+	if err != nil {
+		return fmt.Errorf("Failed to add external target: %s", err)
+	}
+	return nil
 }
