@@ -1,7 +1,9 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -31,12 +33,16 @@ type Request struct {
 	resource     api.ResourceType
 	resourceName string
 
+	data    io.Reader
+	headers map[string]string
+
 	err error
 }
 
 type Result struct {
-	body []byte
-	err  error
+	statusCode int
+	body       string
+	err        error
 }
 
 func NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiPath string) *Request {
@@ -97,6 +103,25 @@ func (r *Request) Param(paramName, value string) *Request {
 	return r
 }
 
+func (r *Request) Header(key, value string) *Request {
+	if r.err != nil {
+		return r
+	}
+	if r.headers == nil {
+		r.headers = map[string]string{}
+	}
+	r.headers[key] = value
+	return r
+}
+
+func (r *Request) Data(data []byte) *Request {
+	if r.err != nil {
+		return r
+	}
+	r.data = bytes.NewBuffer(data)
+	return r
+}
+
 // URL returns the current working URL.
 func (r *Request) URL() *url.URL {
 	p := r.pathPrefix
@@ -127,18 +152,18 @@ func (r *Request) URL() *url.URL {
 	return finalURL
 }
 
-func (r *Request) Do() (string, error) {
+func (r *Request) Do() (Result, error) {
 	var result Result
 	err := r.request(func(resp *http.Response) {
 		result = parseHTTPResponse(resp)
 	})
 	if err != nil {
-		return "", err
+		return Result{}, err
 	}
 	if result.err != nil {
-		return "", err
+		return Result{}, err
 	}
-	return string(result.body), nil
+	return result, nil
 }
 
 // Perform the actual http request.
@@ -150,9 +175,15 @@ func (r *Request) request(fn func(*http.Response)) error {
 
 	url := r.URL().String()
 	glog.V(4).Infof("The request url is %s", url)
-	req, err := http.NewRequest(r.verb, url, nil)
+	fmt.Printf("The request url is %s\n", url)
+	req, err := http.NewRequest(r.verb, url, r.data)
 	if err != nil {
 		return err
+	}
+	if r.headers != nil {
+		for key, value := range r.headers {
+			req.Header.Set(key, value)
+		}
 	}
 	// Set basic authentication for the request if there is any.
 	if r.basicAuth != nil {
@@ -172,21 +203,20 @@ func (r *Request) request(fn func(*http.Response)) error {
 func parseHTTPResponse(resp *http.Response) Result {
 	if resp == nil {
 		return Result{
-			body: nil,
-			err:  fmt.Errorf("response sent in is nil"),
+			err: fmt.Errorf("response sent in is nil"),
 		}
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return Result{
-			body: nil,
-			err:  fmt.Errorf("Error reading response body:%++v", err),
+			err: fmt.Errorf("Error reading response body:%++v", err),
 		}
 	}
 
 	return Result{
-		body: content,
-		err:  nil,
+		statusCode: resp.StatusCode,
+		body:       string(content),
+		err:        nil,
 	}
 }

@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"net/http"
+	"encoding/json"
 
 	"github.com/dongyiyang/turbo-api/pkg/api"
 )
@@ -21,29 +22,45 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 }
 
 // Discover a target using api
-// <turbo_server_address>/vmturbo/api/targets/<name_or_address>
-func (c *Client) DiscoverTarget(nameOrAddress string) error {
-	_, err := c.Post().Resource(api.Resource_Type_Target).Name(nameOrAddress).Do()
+// <turbo_server_address>/vmturbo/api/targets/<uuid>
+func (c *Client) DiscoverTarget(uuid string) (Result, error) {
+	response, err := c.Post().Resource(api.Resource_Type_Target).Name(uuid).Do()
 	if err != nil {
-		return fmt.Errorf("Failed to discover target %s: %s", nameOrAddress, err)
+		return Result{}, fmt.Errorf("Failed to discover target %s: %s", uuid, err)
 	}
-	return nil
+	return response, nil
+}
+
+func (c *Client) AddTarget(target *api.Target) (Result, error) {
+	targetData, err := json.Marshal(target)
+	if err != nil {
+		return Result{}, err
+	}
+	response, err := c.Post().Resource(api.Resource_Type_Target).
+		Header("Content-Type", "application/json").
+		Header("Accept", "application/json").
+		Data(targetData).
+		Do()
+	if err != nil {
+		return Result{}, err
+	}
+	return response, nil
 }
 
 // Add a ExampleProbe target to server
 // example : <turbo_server_address>/vmturbo/api/externaltargets?
 //                     type=<target_type>&nameOrAddress=<host_address>&username=<username>&targetIdentifier=<target_identifier>&password=<password>
-func (c *Client) AddExternalTarget(target *api.Target) error {
-	_, err := c.Post().Resource(api.Resource_Type_External_Target).
-		Param("type", target.TargetType).
-		Param("nameOrAddress", target.NameOrAddress).
-		Param("targetIdentifier", target.TargetIdentifier).
-		Param("username", target.Username).
-		Param("password", target.Password).
+func (c *Client) AddExternalTarget(exTarget *api.ExternalTarget) (Result, error) {
+	res, err := c.Post().Resource(api.Resource_Type_External_Target).
+		Param("type", exTarget.TargetType).
+		Param("nameOrAddress", exTarget.NameOrAddress).
+		Param("targetIdentifier", exTarget.TargetIdentifier).
+		Param("username", exTarget.Username).
+		Param("password", exTarget.Password).
 		Do()
-
 	if err != nil {
-		return fmt.Errorf("Failed to add external target: %s", err)
+		return Result{}, fmt.Errorf("Failed to add external target: %s", err)
 	}
-	return nil
+	fmt.Printf("Response is %s\n", res)
+	return res, nil
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -266,6 +267,97 @@ func TestParseHTTPResponse(t *testing.T) {
 		result := parseHTTPResponse(item.resp)
 		if item.expectsError && result.err == nil {
 			t.Error("Expected error, but got nil in err field in Result")
+		}
+	}
+}
+
+func TestRequest_Header(t *testing.T) {
+	table := []struct {
+		existingHeader map[string]string
+		key            string
+		value          string
+
+		existingError error
+	}{
+		{
+			existingHeader: map[string]string{
+				"foo_1": "bar_1",
+			},
+			key:           "foo_key",
+			value:         "bar_value",
+			existingError: fmt.Errorf("Error"),
+		},
+		{
+			existingHeader: map[string]string{
+				"foo_1": "bar_1",
+			},
+			key:   "foo_key",
+			value: "bar_value",
+		},
+		{
+			key:   "foo_key",
+			value: "bar_value",
+		},
+	}
+	u, _ := url.Parse("http://localhost")
+	for _, item := range table {
+		request := NewRequest(http.DefaultClient, "GET", u, "")
+		expectedRequest := &Request{
+			client:     request.client,
+			verb:       request.verb,
+			baseURL:    request.baseURL,
+			pathPrefix: request.pathPrefix,
+
+			headers: request.headers,
+		}
+		if item.existingError != nil {
+			request.err = item.existingError
+			expectedRequest.err = item.existingError
+		} else {
+			if expectedRequest.headers == nil {
+				expectedRequest.headers = map[string]string{}
+			}
+			expectedRequest.headers[item.key] = item.value
+		}
+		newRequest := request.Header(item.key, item.value)
+		if !reflect.DeepEqual(expectedRequest, newRequest) {
+			t.Errorf("Expected %v, got %v", expectedRequest, newRequest)
+		}
+
+	}
+}
+
+func TestRequest_Data(t *testing.T) {
+	table := []struct {
+		data        []byte
+		existingErr error
+	}{
+		{
+			data:        []byte("Some string"),
+			existingErr: fmt.Errorf("Error"),
+		},
+		{
+			data: []byte("Some string"),
+		},
+	}
+	u, _ := url.Parse("http://localhost")
+	for _, item := range table {
+		request := NewRequest(http.DefaultClient, "GET", u, "")
+		expectedRequest := &Request{
+			client:     request.client,
+			verb:       request.verb,
+			baseURL:    request.baseURL,
+			pathPrefix: request.pathPrefix,
+		}
+		if item.existingErr != nil {
+			request.err = item.existingErr
+			expectedRequest.err = item.existingErr
+		} else {
+			expectedRequest.data = bytes.NewBuffer(item.data)
+		}
+		newRequest := request.Data(item.data)
+		if !reflect.DeepEqual(expectedRequest, newRequest) {
+			t.Errorf("Expected %v, got %v", expectedRequest, newRequest)
 		}
 	}
 }

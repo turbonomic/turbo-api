@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+
 	"github.com/dongyiyang/turbo-api/pkg/api"
 )
 
@@ -14,18 +15,18 @@ func TestNewAPIClientWithBA(t *testing.T) {
 	table := []struct {
 		config         *Config
 		expectedClient *Client
-		expectsError    bool
+		expectsError   bool
 	}{
 		{
-			config:&Config{baseURL, apiPath, nil},
-			expectsError:true,
+			config:       &Config{baseURL, apiPath, nil},
+			expectsError: true,
 		},
 		{
-			config:&Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
-			expectedClient:&Client{
+			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+			expectedClient: &Client{
 				&RESTClient{http.DefaultClient, baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 			},
-			expectsError:false,
+			expectsError: false,
 		},
 	}
 	for _, item := range table {
@@ -39,25 +40,38 @@ func TestNewAPIClientWithBA(t *testing.T) {
 	}
 }
 
+// Error is expected because of empty address
 func TestClient_DiscoverTarget_WithError(t *testing.T) {
 	address := ""
 	baseURL, _ := url.Parse("http://localhost")
 	apiPath := "path/to/api"
-	config:=&Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
 	client, _ := NewAPIClientWithBA(config)
-	err := client.DiscoverTarget(address)
+	_, err := client.DiscoverTarget(address)
 	if err == nil {
 		t.Error("Expected error, but got no error.")
 	}
 }
 
 func TestClient_AddExternalTarget_WithError(t *testing.T) {
+	target := &api.ExternalTarget{}
+	baseURL, _ := url.Parse("http://localhost")
+	apiPath := "path/to/api"
+	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	client, _ := NewAPIClientWithBA(config)
+	_, err := client.AddExternalTarget(target)
+	if err == nil {
+		t.Error("Expected error, but got no error.")
+	}
+}
+
+func TestClient_AddTarget_WithError(t *testing.T) {
 	target := &api.Target{}
 	baseURL, _ := url.Parse("http://localhost")
 	apiPath := "path/to/api"
-	config:=&Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
 	client, _ := NewAPIClientWithBA(config)
-	err := client.AddExternalTarget(target)
+	_, err := client.AddTarget(target)
 	if err == nil {
 		t.Error("Expected error, but got no error.")
 	}
