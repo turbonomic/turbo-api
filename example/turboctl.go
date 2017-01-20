@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/dongyiyang/turbo-api/pkg/api"
-	"github.com/dongyiyang/turbo-api/pkg/client"
 	"net/url"
+
+	"github.com/turbonomic/turbo-api/pkg/api"
+	"github.com/turbonomic/turbo-api/pkg/client"
 )
 
 func main() {

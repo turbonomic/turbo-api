@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dongyiyang/turbo-api/pkg/api"
+	"github.com/turbonomic/turbo-api/pkg/api"
 
 	"github.com/golang/glog"
 )

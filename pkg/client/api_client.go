@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/dongyiyang/turbo-api/pkg/api"
+	"github.com/turbonomic/turbo-api/pkg/api"
 )
 
 type Client struct {

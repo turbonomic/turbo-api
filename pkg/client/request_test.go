@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dongyiyang/turbo-api/pkg/api"
+	"github.com/turbonomic/turbo-api/pkg/api"
 )
 
 func TestNewRequest(t *testing.T) {
