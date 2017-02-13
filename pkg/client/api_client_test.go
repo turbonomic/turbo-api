@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/turbonomic/turbo-api/pkg/api"
+	"crypto/tls"
 )
 
 func TestNewAPIClientWithBA(t *testing.T) {
 	baseURL, _ := url.Parse("http://localhost")
+	secureURL, _ := url.Parse("https://localhost")
 	apiPath := "path/to/api"
 	table := []struct {
 		config         *Config
@@ -25,6 +27,15 @@ func TestNewAPIClientWithBA(t *testing.T) {
 			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 			expectedClient: &Client{
 				&RESTClient{http.DefaultClient, baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+			},
+			expectsError: false,
+		},
+		{
+			config: &Config{secureURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+			expectedClient: &Client{
+				&RESTClient{&http.Client{Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}}, secureURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 			},
 			expectsError: false,
 		},
