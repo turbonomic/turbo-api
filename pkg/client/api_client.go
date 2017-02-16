@@ -15,18 +15,18 @@ type Client struct {
 
 // Create a Turbo API Client based on basic authentication.
 func NewAPIClientWithBA(c *Config) (*Client, error) {
-	if c.BasicAuth == nil {
+	if c.basicAuth == nil {
 		return nil, fmt.Errorf("Basic authentication is not set")
 	}
 	client := http.DefaultClient
 	// If use https, disable the security check.
-	if c.ServerAddress.Scheme == "https" {
+	if c.serverAddress.Scheme == "https" {
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 		client = &http.Client{Transport: tr}
 	}
-	restClient := NewRESTClient(client, c.ServerAddress, c.APIPath).BasicAuthentication(c.BasicAuth)
+	restClient := NewRESTClient(client, c.serverAddress, c.apiPath).BasicAuthentication(c.basicAuth)
 	return &Client{restClient}, nil
 }
 
