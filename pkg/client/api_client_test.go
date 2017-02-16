@@ -64,18 +64,6 @@ func TestClient_DiscoverTarget_WithError(t *testing.T) {
 	}
 }
 
-func TestClient_AddExternalTarget_WithError(t *testing.T) {
-	target := &api.ExternalTarget{}
-	baseURL, _ := url.Parse("http://localhost")
-	apiPath := "path/to/api"
-	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
-	client, _ := NewAPIClientWithBA(config)
-	_, err := client.AddExternalTarget(target)
-	if err == nil {
-		t.Error("Expected error, but got no error.")
-	}
-}
-
 func TestClient_AddTarget_WithError(t *testing.T) {
 	target := &api.Target{}
 	baseURL, _ := url.Parse("http://localhost")
