@@ -1,13 +1,15 @@
 package client
 
 import (
+	"crypto/tls"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
 	"testing"
 
 	"github.com/turbonomic/turbo-api/pkg/api"
-	"crypto/tls"
 )
 
 func TestNewAPIClientWithBA(t *testing.T) {
@@ -73,5 +75,36 @@ func TestClient_AddTarget_WithError(t *testing.T) {
 	_, err := client.AddTarget(target)
 	if err == nil {
 		t.Error("Expected error, but got no error.")
+	}
+}
+
+func TestBuildErrorAPIDTO(t *testing.T) {
+	table := []struct {
+		requestDesc    string
+		status         string
+		contentMessage string
+	}{
+		{
+			requestDesc:    "target addition",
+			status:         "400 Bad Request",
+			contentMessage: "some message",
+		},
+		{
+			requestDesc:    "target addition",
+			status:         "400 Bad Request",
+			contentMessage: "",
+		},
+	}
+	for _, item := range table {
+		content := fmt.Sprintf("{\"message\":\"%s\"}", item.contentMessage)
+		err := buildResponseError(item.requestDesc, item.status, content)
+		expectedErrString := fmt.Sprintf("unsuccessful %s response: %s.", item.requestDesc, item.status)
+		if item.contentMessage != "" {
+			expectedErrString = fmt.Sprintf("%s %s.", expectedErrString, item.contentMessage)
+		}
+		expectedErr := errors.New(expectedErrString)
+		if !reflect.DeepEqual(err, expectedErr) {
+			t.Errorf("Expected error %s, got %s", expectedErrString, err)
+		}
 	}
 }
