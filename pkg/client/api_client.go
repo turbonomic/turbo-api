@@ -175,7 +175,7 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 			default:
 			}
 		}
-		glog.V(4).Info("%s::%s::%s\n", category, targetType, tgtId)
+		glog.V(4).Infof("%s::%s::%s\n", category, targetType, tgtId)
 		if target.Category == category && target.Type == targetType && tgtId == targetId {
 			return true, nil
 		}
