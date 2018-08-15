@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/turbonomic/turbo-api/pkg/api"
 	"github.com/golang/glog"
+	"github.com/turbonomic/turbo-api/pkg/api"
 )
 
 type Client struct {
@@ -34,7 +34,7 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 		client = &http.Client{Transport: tr}
 	}
 	restClient := NewRESTClient(client, c.serverAddress, c.apiPath).BasicAuthentication(c.basicAuth)
-	return &Client{restClient}, nil
+	return &Client{restClient, nil}, nil
 }
 
 // Login to the Turbo API server
@@ -78,7 +78,7 @@ func (c *Client) DiscoverTarget(uuid string) (*Result, error) {
 
 //Add a target using API
 func (c *Client) AddTarget(target *api.Target) (*Result, error) {
-	// find if the target exists - this is a workaround since in current XL server,
+	// Find if the target exists - this is a workaround since in current XL server,
 	// duplicate targets can be added
 	targetExists, _ := c.FindTarget(target)
 	if targetExists {
@@ -87,26 +87,32 @@ func (c *Client) AddTarget(target *api.Target) (*Result, error) {
 
 	glog.V(2).Infof("***************** [AddTarget] %++v\n", target)
 
+	// Create the rest api request
 	targetData, err := json.Marshal(target)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshall target instance: %s", err)
 	}
+
+	if c.SessionCookie == nil {
+		return nil, fmt.Errorf("Null login session cookie\n")
+	}
+
 	request := c.Post().Resource(api.Resource_Type_Target).
 		Header("Content-Type", "application/json").
 		Header("Accept", "application/json").
-		Data(targetData).
-		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value))
+		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value)).
+		Data(targetData)
 
 	glog.V(4).Infof("[AddTarget] Request %++v\n", request)
 
 	response, err := request.Do()
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed to add target: %s", err)
 	}
 	if response.statusCode != 200 {
 		return nil, buildResponseError("target addition", response.status, response.body)
 	}
+
 	return &response, nil
 }
 
@@ -116,7 +122,7 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 	request := c.Get().Resource(api.Resource_Type_Target).
 		Header("Content-Type", "application/json").
 		Header("Accept", "application/json").
-		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value));
+		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value))
 
 	glog.V(4).Infof("[FindTarget] Request %++v\n", request)
 
@@ -146,12 +152,12 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 		var category, targetType, tgtId string
 		for _, v := range targetInstance {
 			switch val := v.(type) {
-			case string :
+			case string:
 				// category field
 				category, _ = targetInstance["category"].(string)
 				// target type field
 				targetType, _ = targetInstance["type"].(string)
-			case []interface{} :
+			case []interface{}:
 				// array of InputFields
 				for _, value := range val {
 					// an instance of InputField
@@ -170,7 +176,7 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 			}
 		}
 		glog.V(4).Info("%s::%s::%s\n", category, targetType, tgtId)
-		if target.Category == category && target.Type == targetType &&  tgtId == targetId {
+		if target.Category == category && target.Type == targetType && tgtId == targetId {
 			return true, nil
 		}
 	}
