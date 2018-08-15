@@ -110,18 +110,13 @@ func (c *Client) AddTarget(target *api.Target) (*Result, error) {
 	return &response, nil
 }
 
-//Add a target using API
+//Find if the given target exists within the Turbo server
 func (c *Client) FindTarget(target *api.Target) (bool, error) {
-	targetData, err := json.Marshal(target)
-	if err != nil {
-		return false, fmt.Errorf("Failed to marshall target instance: %s", err)
-	}
-
+	// Get a list of targets from the Turbo server
 	request := c.Get().Resource(api.Resource_Type_Target).
 		Header("Content-Type", "application/json").
 		Header("Accept", "application/json").
-		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value)).
-		Data(targetData)
+		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value));
 
 	glog.V(4).Infof("[FindTarget] Request %++v\n", request)
 
@@ -135,43 +130,49 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 	if response.statusCode != 200 {
 		return false, buildResponseError("find target", response.status, response.body)
 	}
-	// Target identifier for the given target
+
+	// The target identifier for the given target
 	targetId := getTargetId(target)
 
-	// Parse the response
+	// Parse the response - list of targets
 	var targetList []interface{}
 	json.Unmarshal([]byte(response.body), &targetList)
 
+	// Iterate over the list of targets to look for the given target
+	// by comparing the category, target type and identifier fields
 	for _, tgt := range targetList {
-		m := tgt.(map[string]interface{})
+		// Instance of api.Target
+		targetInstance := tgt.(map[string]interface{})
 		var category, targetType, tgtId string
-		for _, v := range m {
-			category, _ = m["category"].(string)
-			if target.Category != category {
-				continue
-			}
-			targetType, _ = m["type"].(string)
-			if target.Type != targetType {
-				continue
-			}
+		for _, v := range targetInstance {
 			switch val := v.(type) {
-			case []interface{}:
+			case string :
+				// category field
+				category, _ = targetInstance["category"].(string)
+				// target type field
+				targetType, _ = targetInstance["type"].(string)
+			case []interface{} :
+				// array of InputFields
 				for _, value := range val {
+					// an instance of InputField
 					inputFieldMap, ok := value.(map[string]interface{})
+					// Get the target identifier value from the
+					// input field named 'targetIdentifier'
 					if ok {
 						field, ok := inputFieldMap["name"].(string)
+						//
 						if ok && field == "targetIdentifier" {
 							tgtId, _ = inputFieldMap["value"].(string)
-							if tgtId == targetId {
-								return true, nil
-							}
 						}
 					}
 				}
 			default:
 			}
 		}
-		glog.V(4).Infof("%s::%s::%s\n", category, targetType, tgtId)
+		glog.V(4).Info("%s::%s::%s\n", category, targetType, tgtId)
+		if target.Category == category && target.Type == targetType &&  tgtId == targetId {
+			return true, nil
+		}
 	}
 	return false, nil
 }
