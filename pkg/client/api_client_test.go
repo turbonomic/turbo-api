@@ -29,6 +29,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 			expectedClient: &Client{
 				&RESTClient{http.DefaultClient, baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+				nil,
 			},
 			expectsError: false,
 		},
@@ -38,6 +39,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 				&RESTClient{&http.Client{Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				}}, secureURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+				nil,
 			},
 			expectsError: false,
 		},

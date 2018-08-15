@@ -100,7 +100,7 @@ func TestRESTClient_BasicAuthentication(t *testing.T) {
 	}
 }
 
-func buildExampleRESTClient() *RESTClient{
+func buildExampleRESTClient() *RESTClient {
 	baseURL, _ := url.Parse("http://localhost")
 	client := http.DefaultClient
 	apiPath := "/path/to/api"
