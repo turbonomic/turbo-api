@@ -78,6 +78,10 @@ func (c *Client) DiscoverTarget(uuid string) (*Result, error) {
 
 //Add a target using API
 func (c *Client) AddTarget(target *api.Target) (*Result, error) {
+	if c.SessionCookie == nil {
+		return nil, fmt.Errorf("Null login session cookie\n")
+	}
+
 	// Find if the target exists - this is a workaround since in current XL server,
 	// duplicate targets can be added
 	targetExists, _ := c.FindTarget(target)
@@ -91,10 +95,6 @@ func (c *Client) AddTarget(target *api.Target) (*Result, error) {
 	targetData, err := json.Marshal(target)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshall target instance: %s", err)
-	}
-
-	if c.SessionCookie == nil {
-		return nil, fmt.Errorf("Null login session cookie\n")
 	}
 
 	request := c.Post().Resource(api.Resource_Type_Target).

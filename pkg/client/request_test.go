@@ -115,7 +115,7 @@ func TestRequest_Resource(t *testing.T) {
 			t.Error("Error handling check failed.")
 		}
 		if !item.expectsError && request.resource != item.expectedResource {
-			t.Error("Expected Reource %s, got %s", item.expectedResource, request.resource)
+			t.Errorf("Expected Reource %v, got %v", item.expectedResource, request.resource)
 		}
 	}
 }
@@ -162,7 +162,7 @@ func TestRequest_Name(t *testing.T) {
 			t.Error("Error handling check failed.")
 		}
 		if !item.expectsError && request.resourceName != item.expectedResourceName {
-			t.Error("Expected Reource %s, got %s", item.expectedResourceName, request.resourceName)
+			t.Errorf("Expected Reource %v, got %v", item.expectedResourceName, request.resourceName)
 		}
 	}
 }
