@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/turbonomic/turbo-api/pkg/api"
+	"github.com/golang/glog"
 )
 
 type Client struct {
@@ -52,25 +53,11 @@ func (c *Client) Login() (*Result, error) {
 		return nil, buildResponseError("Turbo server login", response.status, response.body)
 	}
 
-	//var result map[string]interface{}
-	//json.Unmarshal([]byte(response.body), &result)
-	//
-	//for key, value := range result {
-	//	// Each value is an interface{} type, that is type asserted as a string
-	//	fmt.Println(key, value)
-	//}
-	//fmt.Printf("AuthToken = %s\n", result["authToken"])
-
-	//authToken, ok := result["authToken"].(string)
-	//if ok {
-	//	c.AuthToken = authToken
-	//}
-
+	// Save the session cookie
 	sessionCookie, ok := response.cookies[SessionCookie]
-	fmt.Printf("%s", response.cookies)
 	if ok {
 		c.SessionCookie = sessionCookie
-		fmt.Printf("Session Cookie = %s:%s\n", c.SessionCookie.Name, c.SessionCookie.Value)
+		glog.V(4).Infof("Session Cookie = %s:%s\n", c.SessionCookie.Name, c.SessionCookie.Value)
 	} else {
 		return nil, buildResponseError("Invalid session cookie", response.status, fmt.Sprintf("%s", response.cookies))
 	}
@@ -91,13 +78,14 @@ func (c *Client) DiscoverTarget(uuid string) (*Result, error) {
 
 //Add a target using API
 func (c *Client) AddTarget(target *api.Target) (*Result, error) {
-	// find if the target exists
+	// find if the target exists - this is a workaround since in current XL server,
+	// duplicate targets can be added
 	targetExists, _ := c.FindTarget(target)
 	if targetExists {
 		return nil, fmt.Errorf("Target %v exists", target)
 	}
 
-	fmt.Printf("***************** [AddTarget] %++v\n", target)
+	glog.V(2).Infof("***************** [AddTarget] %++v\n", target)
 
 	targetData, err := json.Marshal(target)
 	if err != nil {
@@ -109,7 +97,7 @@ func (c *Client) AddTarget(target *api.Target) (*Result, error) {
 		Data(targetData).
 		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value))
 
-	fmt.Printf("Request %++v\n", request)
+	glog.V(4).Infof("[AddTarget] Request %++v\n", request)
 
 	response, err := request.Do()
 
@@ -124,7 +112,6 @@ func (c *Client) AddTarget(target *api.Target) (*Result, error) {
 
 //Add a target using API
 func (c *Client) FindTarget(target *api.Target) (bool, error) {
-	fmt.Printf("***************** [FindTarget] %++v\n", target)
 	targetData, err := json.Marshal(target)
 	if err != nil {
 		return false, fmt.Errorf("Failed to marshall target instance: %s", err)
@@ -136,7 +123,7 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 		Header("Cookie", fmt.Sprintf("%s=%s", c.SessionCookie.Name, c.SessionCookie.Value)).
 		Data(targetData)
 
-	fmt.Printf("Request %++v\n", request)
+	glog.V(4).Infof("[FindTarget] Request %++v\n", request)
 
 	response, err := request.Do()
 
@@ -144,13 +131,14 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 		fmt.Printf("Failed to execute find target request: %s", err)
 		return false, fmt.Errorf("Failed to execute find target request: %s", err)
 	}
-	fmt.Printf("[FindTarget] Response %++v\n", response)
+
 	if response.statusCode != 200 {
 		return false, buildResponseError("find target", response.status, response.body)
 	}
+	// Target identifier for the given target
+	targetId := getTargetId(target)
 
 	// Parse the response
-	targetId := getTargetId(target)
 	var targetList []interface{}
 	json.Unmarshal([]byte(response.body), &targetList)
 
@@ -183,11 +171,12 @@ func (c *Client) FindTarget(target *api.Target) (bool, error) {
 			default:
 			}
 		}
-		fmt.Printf("%s::%s::%s\n", category, targetType, tgtId)
+		glog.V(4).Infof("%s::%s::%s\n", category, targetType, tgtId)
 	}
 	return false, nil
 }
 
+// Get the target identifier for the given target
 func getTargetId(target *api.Target) string {
 	for _, inputField := range target.InputFields {
 		field := inputField.Name

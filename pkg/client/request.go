@@ -209,10 +209,7 @@ func parseHTTPResponse(resp *http.Response) Result {
 	// Parse cookies
 	cookies := resp.Cookies()
 	cookieMap := make(map[string]*http.Cookie)
-	fmt.Printf("Parsing cookies ...\n")
 	for _, cookie := range cookies {
-
-		fmt.Printf("Cookie ===> %s:%s:%s\n", cookie.Name, cookie.Value, cookie.Raw)
 		cookieMap[cookie.Name] = cookie
 	}
 
