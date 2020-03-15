@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/turbonomic/turbo-api/pkg/api"
@@ -26,13 +28,33 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 		return nil, errors.New("Basic authentication is not set")
 	}
 	client := http.DefaultClient
-	// If use https, disable the security check.
+	proxy := c.proxy
+	var tr http.Transport
 	if c.serverAddress.Scheme == "https" {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		client = &http.Client{Transport: tr}
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
+
+	if proxy != "" {
+		//Check if the proxy server requires authentication or not
+		//Authenticated proxy format: http://username:password@ip:port
+		//Non-Aunthenticated proxy format: http://ip:port
+		if strings.Index(proxy, "@") != -1 {
+			//Extract the username password portion, with @
+			username_password := proxy[strings.Index(proxy, "//")+2 : strings.Index(proxy, "@")+1]
+			username := username_password[:strings.Index(username_password, ":")]
+			password := username_password[strings.Index(username_password, ":")+1 : strings.Index(username_password, "@")]
+			//Extract Proxy address by remove the username_password
+			proxy_addr := strings.ReplaceAll(proxy, username_password, "")
+			proxyURL, _ := url.Parse(proxy_addr)
+			proxyURL.User = url.UserPassword(username, password)
+			tr.Proxy = http.ProxyURL(proxyURL)
+		} else {
+			proxyURL, _ := url.Parse(proxy)
+			tr.Proxy = http.ProxyURL(proxyURL)
+		}
+	}
+	client = &http.Client{Transport: &tr}
+
 	restClient := NewRESTClient(client, c.serverAddress, c.apiPath).BasicAuthentication(c.basicAuth)
 	return &Client{restClient, nil}, nil
 }
