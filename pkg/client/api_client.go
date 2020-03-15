@@ -29,32 +29,33 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 	}
 	client := http.DefaultClient
 	proxy := c.proxy
-	var tr http.Transport
-	if c.serverAddress.Scheme == "https" {
-		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
-
-	if proxy != "" {
-		//Check if the proxy server requires authentication or not
-		//Authenticated proxy format: http://username:password@ip:port
-		//Non-Aunthenticated proxy format: http://ip:port
-		if strings.Index(proxy, "@") != -1 {
-			//Extract the username password portion, with @
-			usernamePassword := proxy[strings.Index(proxy, "//")+2 : strings.Index(proxy, "@")+1]
-			username := usernamePassword[:strings.Index(usernamePassword, ":")]
-			password := usernamePassword[strings.Index(usernamePassword, ":")+1 : strings.Index(usernamePassword, "@")]
-			//Extract Proxy address by remove the username_password
-			proxyAddr := strings.ReplaceAll(proxy, usernamePassword, "")
-			proxyURL, _ := url.Parse(proxyAddr)
-			proxyURL.User = url.UserPassword(username, password)
-			tr.Proxy = http.ProxyURL(proxyURL)
-		} else {
-			proxyURL, _ := url.Parse(proxy)
-			tr.Proxy = http.ProxyURL(proxyURL)
+	if proxy != "" || c.serverAddress.Scheme == "https" {
+		var tr http.Transport
+		if c.serverAddress.Scheme == "https" {
+			tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		}
-	}
-	client = &http.Client{Transport: &tr}
 
+		if proxy != "" {
+			//Check if the proxy server requires authentication or not
+			//Authenticated proxy format: http://username:password@ip:port
+			//Non-Aunthenticated proxy format: http://ip:port
+			if strings.Index(proxy, "@") != -1 {
+				//Extract the username password portion, with @
+				usernamePassword := proxy[strings.Index(proxy, "//")+2 : strings.Index(proxy, "@")+1]
+				username := usernamePassword[:strings.Index(usernamePassword, ":")]
+				password := usernamePassword[strings.Index(usernamePassword, ":")+1 : strings.Index(usernamePassword, "@")]
+				//Extract Proxy address by remove the username_password
+				proxyAddr := strings.ReplaceAll(proxy, usernamePassword, "")
+				proxyURL, _ := url.Parse(proxyAddr)
+				proxyURL.User = url.UserPassword(username, password)
+				tr.Proxy = http.ProxyURL(proxyURL)
+			} else {
+				proxyURL, _ := url.Parse(proxy)
+				tr.Proxy = http.ProxyURL(proxyURL)
+			}
+		}
+		client = &http.Client{Transport: &tr}
+	}
 	restClient := NewRESTClient(client, c.serverAddress, c.apiPath).BasicAuthentication(c.basicAuth)
 	return &Client{restClient, nil}, nil
 }

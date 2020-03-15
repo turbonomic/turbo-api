@@ -65,11 +65,11 @@ func TestConfigBuilder_Create(t *testing.T) {
 			apiPath:        "path/to/api",
 			username:       "foo",
 			password:       "bar",
-			expectedConfig: &Config{baseURL, "path/to/api", &BasicAuthentication{"foo", "bar"}},
+			expectedConfig: &Config{baseURL, "path/to/api", &BasicAuthentication{"foo", "bar"}, ""},
 		},
 		{
 			serverAddress:  baseURL,
-			expectedConfig: &Config{baseURL, defaultAPIPath, nil},
+			expectedConfig: &Config{baseURL, defaultAPIPath, nil, ""},
 		},
 	}
 	for _, item := range table {
