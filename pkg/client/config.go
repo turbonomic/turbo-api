@@ -62,6 +62,6 @@ func (cb *ConfigBuilder) Create() *Config {
 			return cb.apiPath
 		}(),
 		basicAuth: cb.basicAuth,
-		proxy: cb.proxy,
+		proxy:     cb.proxy,
 	}
 }
