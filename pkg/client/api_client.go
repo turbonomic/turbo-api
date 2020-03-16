@@ -48,14 +48,14 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 				proxyAddr := strings.ReplaceAll(proxy, usernamePassword, "")
 				proxyURL, err := url.Parse(proxyAddr)
 				if err != nil {
-					return nil,  fmt.Errorf("Failed to parse proxy\n")
+					return nil, fmt.Errorf("Failed to parse proxy\n")
 				}
 				proxyURL.User = url.UserPassword(username, password)
 				tr.Proxy = http.ProxyURL(proxyURL)
 			} else {
 				proxyURL, err := url.Parse(proxy)
 				if err != nil {
-					return nil,  fmt.Errorf("Failed to parse proxy\n")
+					return nil, fmt.Errorf("Failed to parse proxy\n")
 				}
 				tr.Proxy = http.ProxyURL(proxyURL)
 			}
