@@ -41,16 +41,22 @@ func NewAPIClientWithBA(c *Config) (*Client, error) {
 			//Non-Aunthenticated proxy format: http://ip:port
 			if strings.Index(proxy, "@") != -1 {
 				//Extract the username password portion, with @
-				usernamePassword := proxy[strings.Index(proxy, "//")+2 : strings.Index(proxy, "@")+1]
+				usernamePassword := proxy[strings.Index(proxy, "//")+2 : strings.LastIndex(proxy, "@")+1]
 				username := usernamePassword[:strings.Index(usernamePassword, ":")]
-				password := usernamePassword[strings.Index(usernamePassword, ":")+1 : strings.Index(usernamePassword, "@")]
+				password := usernamePassword[strings.Index(usernamePassword, ":")+1 : strings.LastIndex(usernamePassword, "@")]
 				//Extract Proxy address by remove the username_password
 				proxyAddr := strings.ReplaceAll(proxy, usernamePassword, "")
-				proxyURL, _ := url.Parse(proxyAddr)
+				proxyURL, err := url.Parse(proxyAddr)
+				if err != nil {
+					return nil,  fmt.Errorf("Failed to parse proxy\n")
+				}
 				proxyURL.User = url.UserPassword(username, password)
 				tr.Proxy = http.ProxyURL(proxyURL)
 			} else {
-				proxyURL, _ := url.Parse(proxy)
+				proxyURL, err := url.Parse(proxy)
+				if err != nil {
+					return nil,  fmt.Errorf("Failed to parse proxy\n")
+				}
 				tr.Proxy = http.ProxyURL(proxyURL)
 			}
 		}
