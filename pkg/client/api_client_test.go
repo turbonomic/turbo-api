@@ -22,11 +22,11 @@ func TestNewAPIClientWithBA(t *testing.T) {
 		expectsError   bool
 	}{
 		{
-			config:       &Config{baseURL, apiPath, nil},
+			config:       &Config{baseURL, apiPath, nil, ""},
 			expectsError: true,
 		},
 		{
-			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""},
 			expectedClient: &Client{
 				&RESTClient{http.DefaultClient, baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 				nil,
@@ -34,7 +34,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 			expectsError: false,
 		},
 		{
-			config: &Config{secureURL, apiPath, &BasicAuthentication{"foo", "bar"}},
+			config: &Config{secureURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""},
 			expectedClient: &Client{
 				&RESTClient{&http.Client{Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -60,7 +60,7 @@ func TestClient_DiscoverTarget_WithError(t *testing.T) {
 	address := ""
 	baseURL, _ := url.Parse("http://localhost")
 	apiPath := "path/to/api"
-	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""}
 	client, _ := NewAPIClientWithBA(config)
 	_, err := client.DiscoverTarget(address)
 	if err == nil {
@@ -72,7 +72,7 @@ func TestClient_AddTarget_WithError(t *testing.T) {
 	target := &api.Target{}
 	baseURL, _ := url.Parse("http://localhost")
 	apiPath := "path/to/api"
-	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}}
+	config := &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""}
 	client, _ := NewAPIClientWithBA(config)
 	_, err := client.AddTarget(target)
 	if err == nil {
