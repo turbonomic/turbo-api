@@ -69,13 +69,13 @@ func TestConfigBuilder_Create(t *testing.T) {
 		},
 		{
 			serverAddress:  baseURL,
-			expectedConfig: &Config{baseURL, defaultAPIPath, nil, ""},
+			expectedConfig: &Config{baseURL, APIPath, nil, ""},
 		},
 	}
 	for _, item := range table {
 		cb := NewConfigBuilder(item.serverAddress)
 		if item.apiPath != "" {
-			cb = cb.APIPath(item.apiPath)
+			cb = cb.WithPath(item.apiPath)
 		}
 		if item.username != "" && item.password != "" {
 			cb = cb.BasicAuthentication(item.username, item.password)

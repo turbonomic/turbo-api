@@ -18,7 +18,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 	apiPath := "path/to/api"
 	table := []struct {
 		config         *Config
-		expectedClient *Client
+		expectedClient *APIClient
 		expectsError   bool
 	}{
 		{
@@ -27,7 +27,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 		},
 		{
 			config: &Config{baseURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""},
-			expectedClient: &Client{
+			expectedClient: &APIClient{
 				&RESTClient{http.DefaultClient, baseURL, apiPath, &BasicAuthentication{"foo", "bar"}},
 				nil,
 			},
@@ -35,7 +35,7 @@ func TestNewAPIClientWithBA(t *testing.T) {
 		},
 		{
 			config: &Config{secureURL, apiPath, &BasicAuthentication{"foo", "bar"}, ""},
-			expectedClient: &Client{
+			expectedClient: &APIClient{
 				&RESTClient{&http.Client{Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				}}, secureURL, apiPath, &BasicAuthentication{"foo", "bar"}},

@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewRequest(t *testing.T) {
-	// NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiPath string) *Request
+	// NewRequest(client HTTPClient, verb string, baseURL *url.URL, path string) *Request
 	client := http.DefaultClient
 	verb := "GET"
 	baseURL, _ := url.Parse("http://localhost")
@@ -90,13 +90,13 @@ func TestRequest_Resource(t *testing.T) {
 			expectsError:  true,
 		},
 		{
-			existingResource: api.Resource_Type_Target,
+			existingResource: api.Resource_Type_Targets,
 			resource:         api.Resource_Type_External_Target,
 			expectsError:     true,
 		},
 		{
-			resource:         api.Resource_Type_Target,
-			expectedResource: api.Resource_Type_Target,
+			resource:         api.Resource_Type_Targets,
+			expectedResource: api.Resource_Type_Targets,
 			expectsError:     false,
 		},
 	}
@@ -210,7 +210,7 @@ func TestRequest_ResourceURL(t *testing.T) {
 		resource  api.ResourceType
 		expectStr string
 	}{
-		{api.Resource_Type_Target, u.String() + "/targets"},
+		{api.Resource_Type_Targets, u.String() + "/targets"},
 		{api.Resource_Type_External_Target, u.String() + "/externaltargets"},
 	}
 	for _, test := range tests {
@@ -230,7 +230,7 @@ func TestURLInOrder(t *testing.T) {
 		expectStr    string
 	}{
 		{
-			resource:     api.Resource_Type_Target,
+			resource:     api.Resource_Type_Targets,
 			resourceName: "foo",
 			expectStr:    "http://localhost/targets/foo",
 		},
