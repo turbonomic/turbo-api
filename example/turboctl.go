@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/golang/glog"
 	"github.com/turbonomic/turbo-api/pkg/api"
 	"github.com/turbonomic/turbo-api/pkg/client"
 )
@@ -15,15 +16,14 @@ func main() {
 func addTarget() {
 	serverAddress, err := url.Parse("<Server_Address>")
 	if err != nil {
-		fmt.Errorf("Incorrect URL: %s", err)
+		glog.Errorf("Incorrect URL: %s", err)
 	}
 	config := client.NewConfigBuilder(serverAddress).
-		APIPath("/vmturbo/rest").
 		BasicAuthentication("<UI-username>", "UI-password").
 		Create()
-	client, err := client.NewAPIClientWithBA(config)
+	turboClient, err := client.NewTurboClient(config)
 	if err != nil {
-		fmt.Errorf("Error creating client: %s", err)
+		glog.Errorf("Error creating client: %s", err)
 	}
 
 	target := &api.Target{
@@ -47,12 +47,10 @@ func addTarget() {
 			},
 		},
 	}
-	resp, err := client.AddTarget(target)
-	if err != nil {
-		fmt.Errorf("Error adding target: %s", err)
+	if err = turboClient.AddTarget(target, client.API); err != nil {
+		glog.Errorf("Error adding target: %s", err)
 		return
 	}
-	fmt.Printf("Response is %++v", resp)
 }
 
 // Add an external target. This type of type is registered through SDK.
@@ -61,17 +59,16 @@ func addExternalTarget() {
 	// Get Turbonomic server address.
 	serverAddress, err := url.Parse("<SERVER_ADDRESS>")
 	if err != nil {
-		fmt.Printf("Incorrect URL: %s\n", err)
+		glog.Errorf("Incorrect URL: %s", err)
 	}
 
 	// Create API client config.
 	config := client.NewConfigBuilder(serverAddress).
-		APIPath("/vmturbo/rest").
 		BasicAuthentication("<UI_USERNAME>", "<UI_PASSWORD>").
 		Create()
-	client, err := client.NewAPIClientWithBA(config)
+	turboClient, err := client.NewTurboClient(config)
 	if err != nil {
-		fmt.Printf("Error creating client: %s\n", err)
+		glog.Errorf("Error creating client: %s", err)
 	}
 
 	// Configure target data.
@@ -98,32 +95,29 @@ func addExternalTarget() {
 	}
 
 	// Make API calls.
-	resp, err := client.AddTarget(target)
-	if err != nil {
+	if err = turboClient.AddTarget(target, client.API); err != nil {
 		fmt.Printf("Error adding target: %s\n", err)
 		return
 	}
-	fmt.Printf("Response is %++v\n", resp)
 }
 
 func discoverTargetExample() {
 	serverAddress, err := url.Parse("<SERVER_ADDRESS>")
 	if err != nil {
-		fmt.Errorf("Incorrect URL: %s", err)
+		glog.Errorf("Incorrect URL: %s", err)
 	}
 	config := client.NewConfigBuilder(serverAddress).
-		APIPath("/vmturbo/rest").
 		BasicAuthentication("<UI_USERNAME>", "<UI_PASSWORD>").
 		Create()
-	client, err := client.NewAPIClientWithBA(config)
+	turboClient, err := client.NewTurboClient(config)
 	if err != nil {
-		fmt.Errorf("Error creating client: %s", err)
+		glog.Errorf("Error creating client: %s", err)
 	}
 	uuid := "<TARGET_UUID>"
-	resp, err := client.DiscoverTarget(uuid)
+	resp, err := turboClient.DiscoverTarget(uuid, client.API)
 	if err != nil {
-		fmt.Errorf("Error adding target: %s", err)
+		glog.Errorf("Error adding target: %s", err)
 		return
 	}
-	fmt.Printf("Response is %++v", resp)
+	glog.Infof("Response is %+v", resp)
 }

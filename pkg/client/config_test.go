@@ -55,28 +55,23 @@ func TestConfigBuilder_Create(t *testing.T) {
 	baseURL, _ := url.Parse("http://localhost")
 	table := []struct {
 		serverAddress  *url.URL
-		apiPath        string
 		username       string
 		password       string
 		expectedConfig *Config
 	}{
 		{
 			serverAddress:  baseURL,
-			apiPath:        "path/to/api",
 			username:       "foo",
 			password:       "bar",
-			expectedConfig: &Config{baseURL, "path/to/api", &BasicAuthentication{"foo", "bar"}, ""},
+			expectedConfig: &Config{baseURL, &BasicAuthentication{"foo", "bar"}, ""},
 		},
 		{
 			serverAddress:  baseURL,
-			expectedConfig: &Config{baseURL, defaultAPIPath, nil, ""},
+			expectedConfig: &Config{baseURL, nil, ""},
 		},
 	}
 	for _, item := range table {
 		cb := NewConfigBuilder(item.serverAddress)
-		if item.apiPath != "" {
-			cb = cb.APIPath(item.apiPath)
-		}
 		if item.username != "" && item.password != "" {
 			cb = cb.BasicAuthentication(item.username, item.password)
 		}
