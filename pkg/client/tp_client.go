@@ -190,7 +190,9 @@ func (c *TPClient) getProbeID(probeType, probeCategory string) (int64, error) {
 }
 
 func (c *TPClient) updateTarget(existingTarget *api.TargetInfo, input *api.Target) error {
-	inputFieldsData, err := json.Marshal(input.InputFields)
+	// existingTarget.TargetSpec is guaranteed to be non nil
+	existingTarget.TargetSpec.InputFields = input.InputFields
+	targetData, err := json.Marshal(existingTarget.TargetSpec)
 	if err != nil {
 		return fmt.Errorf("failed to marshall input fields array: %v", err)
 	}
@@ -198,10 +200,10 @@ func (c *TPClient) updateTarget(existingTarget *api.TargetInfo, input *api.Targe
 	request := c.Put().Resource(api.Resource_Type_Target).Name(strconv.FormatInt(existingTarget.TargetID, 10)).
 		Header("Content-Type", "application/json").
 		Header("Accept", "application/json").
-		Data(inputFieldsData)
+		Data(targetData)
 
 	glog.V(4).Infof("[UpdateTarget] %v", request)
-	glog.V(4).Infof("[UpdateTarget] Data: %s", inputFieldsData)
+	glog.V(4).Infof("[UpdateTarget] Data: %s", targetData)
 
 	// Execute the request
 	response, err := request.Do()
