@@ -30,7 +30,7 @@ func TestGetProbeIDWithRetry(t *testing.T) {
 func TestExtractCommunicationBindingChannel(t *testing.T) {
 	communicationBindingChannel := "xoxo"
 	inputField1 := api.InputField{Name: "foo", Value: "123"}
-	inputField2 := api.InputField{Name: api.COMMUNICATION_BINDING_CHANNEL, Value: communicationBindingChannel}
+	inputField2 := api.InputField{Name: api.CommunicationBindingChannel, Value: communicationBindingChannel}
 	inputField3 := api.InputField{Name: "bar", Value: "456"}
 	inputFields := []*api.InputField{&inputField1, &inputField2, &inputField3}
 	expectedInputFields := []*api.InputField{&inputField1, &inputField3}

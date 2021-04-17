@@ -104,7 +104,7 @@ func (c *TPClient) extractCommunicationBindingChannel(inputFields []*api.InputFi
 	var communicationBindingChannel string
 	var extractedInputFields []*api.InputField
 	for _, inputField := range inputFields {
-		if inputField.Name == api.COMMUNICATION_BINDING_CHANNEL {
+		if inputField.Name == api.CommunicationBindingChannel {
 			communicationBindingChannel = inputField.Value
 		} else {
 			extractedInputFields = append(extractedInputFields, inputField)
