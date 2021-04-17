@@ -56,10 +56,12 @@ func (c *TPClient) AddTarget(target *api.Target) error {
 		targetName, target.Type, probeID)
 
 	// Construct the TargetSpec required by the rest api
+	inputFields, communicationBindingChannel := c.extractCommunicationBindingChannel(target.InputFields)
 	targetSpec := &api.TargetSpec{
-		ProbeID:          probeID,
-		DerivedTargetIDs: []string{},
-		InputFields:      target.InputFields,
+		ProbeID:                     probeID,
+		DerivedTargetIDs:            []string{},
+		InputFields:                 inputFields,
+		CommunicationBindingChannel: communicationBindingChannel,
 	}
 
 	// Create the rest api request
@@ -93,6 +95,22 @@ func (c *TPClient) AddTarget(target *api.Target) error {
 		targetInfo.TargetID)
 
 	return nil
+}
+
+// extractCommunicationBindingChannel iterates the list of input fields and extracts out the communication binding
+// channel into a separate attribute to return; this also returns a list of input fields with the communication binding
+// channel removed
+func (c *TPClient) extractCommunicationBindingChannel(inputFields []*api.InputField) ([]*api.InputField, string) {
+	var communicationBindingChannel string
+	var extractedInputFields []*api.InputField
+	for _, inputField := range inputFields {
+		if inputField.Name == api.COMMUNICATION_BINDING_CHANNEL {
+			communicationBindingChannel = inputField.Value
+		} else {
+			extractedInputFields = append(extractedInputFields, inputField)
+		}
+	}
+	return extractedInputFields, communicationBindingChannel
 }
 
 func (c *TPClient) findTarget(targetName string) (*api.TargetInfo, error) {
