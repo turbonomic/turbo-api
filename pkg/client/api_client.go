@@ -53,7 +53,7 @@ func (c *APIClient) AddTarget(target *api.Target) error {
 			"(old probe type: %v, new probe type: %v, old target: %v, new target: %v)",
 			existingTarget.Type, target.Type, existingTarget, target)
 		if err := c.deleteTarget(existingTarget); err != nil {
-			return fmt.Errorf("failed to delete target %v of type %v which is necessary due to probe type changed" +
+			return fmt.Errorf("failed to delete target %v of type %v which is necessary due to probe type changed"+
 				" to %v; error: %v", existingTarget.DisplayName, existingTarget.Type, target.Type, err)
 		}
 	}

@@ -41,13 +41,13 @@ func TestExtractCommunicationBindingChannel(t *testing.T) {
 	assert.Equalf(t, communicationBindingChannel, extractedChannel,
 		"Actual extracted communication binding channel %v is different than the expected %v", extractedChannel,
 		communicationBindingChannel)
-	assert.True(t, reflect.DeepEqual(expectedInputFields, extractedInputFields), "Expected input fields: %v," +
+	assert.True(t, reflect.DeepEqual(expectedInputFields, extractedInputFields), "Expected input fields: %v,"+
 		" are not the same as the actual: %v", expectedInputFields, extractedInputFields)
 
 	// with only field 1 and field 3
 	extractedInputFields, extractedChannel = tpClient.extractCommunicationBindingChannel(expectedInputFields)
 	assert.Equalf(t, "", extractedChannel,
 		"Actual extracted communication binding channel %v should be an empty string but not", extractedChannel)
-	assert.True(t, reflect.DeepEqual(expectedInputFields, extractedInputFields), "Expected input fields: %v," +
+	assert.True(t, reflect.DeepEqual(expectedInputFields, extractedInputFields), "Expected input fields: %v,"+
 		" are not the same as the actual: %v", expectedInputFields, extractedInputFields)
 }

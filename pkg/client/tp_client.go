@@ -55,7 +55,7 @@ func (c *TPClient) AddTarget(target *api.Target) error {
 			"(old probe id: %v, new probe id: %v, old target: %v, new target: %v of type %v)",
 			existingTarget.TargetSpec.ProbeID, probeID, existingTarget, target.DisplayName, target.Type)
 		if err := c.deleteTarget(existingTarget); err != nil {
-			return fmt.Errorf("failed to delete target %v of probe id %v which is necessary " +
+			return fmt.Errorf("failed to delete target %v of probe id %v which is necessary "+
 				"due to probe type changed to %v (new id %v); error: %v",
 				existingTarget.DisplayName, existingTarget.TargetSpec.ProbeID, target.Type, probeID, err)
 		}
