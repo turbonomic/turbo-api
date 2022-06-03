@@ -69,7 +69,7 @@ func (c *APIClient) GetHydraAccessToken() (string, error) {
 	var hydraToken HydraTokenBody
 	err = json.Unmarshal([]byte(response.body), &hydraToken)
 	if err != nil {
-		return "", fmt.Errorf("Unmarshall Token failed: %s", request, err)
+		return "", fmt.Errorf("failed to unmarshall get hydra token response: %v", err)
 	}
 	return hydraToken.AccessToken, nil
 }
