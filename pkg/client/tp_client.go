@@ -22,6 +22,14 @@ type TPClient struct {
 	*RESTClient
 }
 
+func (c *TPClient) GetJwtToken(hydraToken string) (string, error) {
+	panic("implement me")
+}
+
+func (c *TPClient) GetHydraAccessToken() (string, error) {
+	panic("implement me")
+}
+
 // DiscoverTarget adds a target via Topology Processor service
 func (c *TPClient) DiscoverTarget(uuid string) (*Result, error) {
 	// Not implemented

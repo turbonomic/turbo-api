@@ -1,10 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/turbonomic/turbo-api/pkg/api"
+	"mime/multipart"
 	"net/http"
 	"strings"
 )
@@ -13,11 +15,63 @@ import (
 type APIClient struct {
 	*RESTClient
 	SessionCookie *http.Cookie
+	ClientId string
+	ClientSecret string
 }
 
 const (
 	SessionCookie string = "JSESSIONID"
 )
+
+type HydraTokenBody struct {
+	AccessToken string `json:"access_token,omitempty"`
+	ExpiresIn   int    `json:"expires_in,omitempty"`
+	Scope       string `json:"scope,omitempty"`
+	TokenType   string `json:"token_type,omitempty"`
+}
+func (c *APIClient) GetJwtToken(hydraToken string) (string, error) {
+	if hydraToken == "" {
+		glog.V(4).Infof("The hydra token is empty")
+		return "", nil
+	}
+	request := c.Post().Resource(api.Resource_Type_auth_token).Header("x-oauth2", "hydra").Header("x-auth-token", hydraToken)
+	// Execute the request
+	response, err := request.Do()
+	if err != nil {
+		return "", fmt.Errorf("request %v failed: %s", request, err)
+	}
+	return response.body, nil
+}
+
+func (c *APIClient) GetHydraAccessToken() (string, error) {
+	if c.ClientId == "" || c.ClientSecret == "" {
+		glog.V(4).Infof("The client id or client secret are not provided")
+		return "", nil
+	}
+
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	_ = writer.WriteField("client_id", c.ClientId)
+	_ = writer.WriteField("client_secret", c.ClientSecret)
+	_ = writer.WriteField("grant_type", "client_credentials")
+	err := writer.Close()
+	if err != nil {
+		return "", fmt.Errorf("failed to Close the writer: %v", err)
+	}
+	// Create the rest api request
+	request := c.Post().Resource(api.Resource_Type_hydra_token).Header("Content-Type", writer.FormDataContentType()).BufferData(payload)
+	// Execute the request
+	response, err := request.Do()
+	if err != nil {
+		return "", fmt.Errorf("request %v failed: %s", request, err)
+	}
+	var hydraToken HydraTokenBody
+	err = json.Unmarshal([]byte(response.body), &hydraToken)
+	if err != nil {
+		return "", fmt.Errorf("Unmarshall Token failed: %s", request, err)
+	}
+	return hydraToken.AccessToken, nil
+}
 
 // Discover a target using API
 // This function is called by turboctl which is not being maintained
