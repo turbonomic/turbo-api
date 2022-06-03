@@ -15,8 +15,8 @@ import (
 type APIClient struct {
 	*RESTClient
 	SessionCookie *http.Cookie
-	ClientId string
-	ClientSecret string
+	ClientId      string
+	ClientSecret  string
 }
 
 const (
@@ -29,6 +29,7 @@ type HydraTokenBody struct {
 	Scope       string `json:"scope,omitempty"`
 	TokenType   string `json:"token_type,omitempty"`
 }
+
 func (c *APIClient) GetJwtToken(hydraToken string) (string, error) {
 	if hydraToken == "" {
 		glog.V(4).Infof("The hydra token is empty")
