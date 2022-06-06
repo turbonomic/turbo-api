@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/enlinxu/turbo-api/vendor/github.com/avast/retry-go"
 	"strconv"
 	"time"
 
