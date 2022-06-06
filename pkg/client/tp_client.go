@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/enlinxu/turbo-api/vendor/github.com/avast/retry-go"
 	"strconv"
 	"time"
 
@@ -23,11 +24,11 @@ type TPClient struct {
 }
 
 func (c *TPClient) GetJwtToken(hydraToken string) (string, error) {
-	panic("implement me")
+	panic("the program is trying to get jwtToken from TP Client, which should never happen")
 }
 
 func (c *TPClient) GetHydraAccessToken() (string, error) {
-	panic("implement me")
+	panic("the program is trying to get hydra access token from TP Client, which should never happen")
 }
 
 // DiscoverTarget adds a target via Topology Processor service
