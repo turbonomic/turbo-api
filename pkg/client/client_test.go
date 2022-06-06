@@ -21,25 +21,25 @@ func TestNewTurboClient(t *testing.T) {
 		expectedClient Client
 	}{
 		{
-			config:  &Config{baseURL, &BasicAuthentication{"foo", "bar"}, ""},
+			config:  &Config{baseURL, &BasicAuthentication{"foo", "bar"}, "", "", ""},
 			service: API,
 			expectedClient: &APIClient{
 				&RESTClient{http.DefaultClient, baseURL, APIPath, &BasicAuthentication{"foo", "bar"}},
-				nil,
+				nil, "", "",
 			},
 		},
 		{
-			config:  &Config{secureURL, &BasicAuthentication{"foo", "bar"}, ""},
+			config:  &Config{secureURL, &BasicAuthentication{"foo", "bar"}, "", "", ""},
 			service: API,
 			expectedClient: &APIClient{
 				&RESTClient{&http.Client{Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				}}, secureURL, APIPath, &BasicAuthentication{"foo", "bar"}},
-				nil,
+				nil, "", "",
 			},
 		},
 		{
-			config:  &Config{secureURL, nil, ""},
+			config:  &Config{secureURL, nil, "", "", ""},
 			service: TopologyProcessor,
 			expectedClient: &TPClient{
 				&RESTClient{&http.Client{Transport: &http.Transport{
@@ -67,7 +67,7 @@ func TestNewTurboClient(t *testing.T) {
 func TestClient_DiscoverTarget_WithError(t *testing.T) {
 	uuid := ""
 	baseURL, _ := url.Parse("http://localhost")
-	config := &Config{baseURL, &BasicAuthentication{"foo", "bar"}, ""}
+	config := &Config{baseURL, &BasicAuthentication{"foo", "bar"}, "", "", ""}
 	turboClient, _ := NewTurboClient(config)
 	_, err := turboClient.DiscoverTarget(uuid, API)
 	if err == nil {
@@ -78,7 +78,7 @@ func TestClient_DiscoverTarget_WithError(t *testing.T) {
 func TestClient_AddTarget_WithError(t *testing.T) {
 	target := &api.Target{}
 	baseURL, _ := url.Parse("http://localhost")
-	config := &Config{baseURL, &BasicAuthentication{"foo", "bar"}, ""}
+	config := &Config{baseURL, &BasicAuthentication{"foo", "bar"}, "", "", ""}
 	turboClient, _ := NewTurboClient(config)
 	if err := turboClient.AddTarget(target, API); err == nil {
 		t.Error("Expected error, but got no error.")

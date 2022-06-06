@@ -63,11 +63,11 @@ func TestConfigBuilder_Create(t *testing.T) {
 			serverAddress:  baseURL,
 			username:       "foo",
 			password:       "bar",
-			expectedConfig: &Config{baseURL, &BasicAuthentication{"foo", "bar"}, ""},
+			expectedConfig: &Config{baseURL, &BasicAuthentication{"foo", "bar"}, "", "", ""},
 		},
 		{
 			serverAddress:  baseURL,
-			expectedConfig: &Config{baseURL, nil, ""},
+			expectedConfig: &Config{baseURL, nil, "", "", ""},
 		},
 	}
 	for _, item := range table {
