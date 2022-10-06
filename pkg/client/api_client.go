@@ -83,7 +83,7 @@ func (c *APIClient) GetHydraAccessToken() (string, error) {
 		// When we receive the 401 status code, means that the credentials are not valid.
 		// We return error, so getJwtToken() method in tap_service will continue
 		// to retry authentication until the credentials are corrected
-		return "",  fmt.Errorf("Hydra service authentication failed using the given client_id and secret")
+		return "", fmt.Errorf("Hydra service authentication failed using the given client_id and secret")
 	}
 	if response.statusCode == 403 || response.statusCode == 502 {
 		// When we receive the 403 status code, meaning the hydra service is currently not available.
