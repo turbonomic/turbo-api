@@ -56,7 +56,7 @@ func (c *APIClient) GetJwtToken(hydraToken string) (string, error) {
 		glog.Errorf("Auth service is not accessible or disabled [%v:%s]", response.statusCode, response.status)
 		return "", nil
 	}
-	if response.statusCode == 502  {
+	if response.statusCode == 502 {
 		// When we receive the 502 status code, meaning the auth service is currently not available.
 		// We return error, so getJwtToken() method in tap_service will continue
 		// to retry authentication until the service is restored
