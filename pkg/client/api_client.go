@@ -264,7 +264,11 @@ func (c *APIClient) findTarget(target *api.Target) (*api.Target, error) {
 	// by comparing the category, target type and identifier fields
 	// target type is regarded the same if the old one only differs by an extra suffix
 	for _, tgt := range targetList {
+<<<<<<< Updated upstream
 		glog.V(4).Infof("Trying to match with target %+v", tgt)
+=======
+		c.printTarget("Trying to match with target", &tgt)
+>>>>>>> Stashed changes
 		// array of InputFields
 		for _, inputField := range tgt.InputFields {
 			if inputField.Name == "targetIdentifier" &&
